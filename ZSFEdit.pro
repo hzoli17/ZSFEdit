@@ -8,8 +8,10 @@ QT += widgets
 INCLUDEPATH += .
 
 # Input
-SOURCES += main.cpp mainwindow.cpp
-HEADERS += mainwindow.h
+SOURCES += main.cpp mainwindow.cpp \
+    wave.cpp
+HEADERS += mainwindow.h \
+    wave.h
 
 RESOURCES += \
     rc.qrc

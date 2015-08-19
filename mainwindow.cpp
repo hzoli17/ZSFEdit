@@ -9,6 +9,8 @@
 #include <QSlider>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QFrame>
+#include "wave.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -27,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
  QLCDNumber *lcd = new QLCDNumber();
  QLabel * play_v = new QLabel(), * rec_v = new QLabel();
  QSlider * play_slider = new QSlider(Qt::Horizontal), * rec_slider = new QSlider(Qt::Horizontal);
+ //QFrame * wave = new QFrame();
+ Wave * wave = new Wave();
  fileName = "";
  changed = false;
  newa->setIcon(QIcon::fromTheme("document-new"));
@@ -87,13 +91,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
  connect(save, SIGNAL(triggered()), this, SLOT(saveFile()));
  connect(saveas, SIGNAL(triggered()), this, SLOT(saveFileAs()));
  connect(quit, SIGNAL(triggered()), qApp, SLOT(quit()));
+ setCentralWidget(wave);
 }
 
 void MainWindow::newFile()
 {
     if (changed)
     {
-        if (QMessageBox::question(this, tr("ZSFEdit"), tr("Already create new file?"), QMessageBox::Yes|QMessageBox::No) == QMessageBox::No) return;
+        QString filename;
+        if (fileName!="") filename=fileName; else filename=tr("Untitled");
+        QMessageBox::StandardButton reply = QMessageBox::warning(this, tr("ZSFEdit"), tr("Save changes to ")+filename+"?", QMessageBox::Cancel|QMessageBox::No|QMessageBox::Yes);
+        switch ((int)reply)
+        {
+            case QMessageBox::Yes:
+            saveFile();
+            break;
+        case QMessageBox::Cancel:
+            return;
+            break;
+        }
     }
 }
 
