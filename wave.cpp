@@ -42,9 +42,9 @@ void Wave::drawWidget(QPainter &qp)
         qp.setPen(wavePen);
         for (int i=0;i<size().width();i++)
         {
-            if (bufferSize<(unsigned int)sampleRate/BytesPerSecond*i) break;
-            addVal = ((float)maxVal/1) * audioBuffer[sampleRate/BytesPerSecond*i];
-            if (audioBuffer[i]>1.0) addVal=maxVal;
+            if (bufferSize<(unsigned long)sampleRate/BytesPerSecond*i) break;
+            addVal = ((float)maxVal/1) * audioBuffer[sampleRate/BytesPerSecond*(i)];
+            if (audioBuffer[sampleRate/BytesPerSecond*i]>1.0) addVal=maxVal;
             qp.drawLine(i, size().height()/2+lastVal, i, size().height()/2 + addVal);
             lastVal = addVal;
         }
