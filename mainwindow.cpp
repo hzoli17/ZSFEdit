@@ -10,7 +10,8 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFrame>
-#include "wave.h"
+#include <cstdlib>
+#include <cmath>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -25,12 +26,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
  QAction *stop = new QAction(tr("&Stop"), this);
  QAction *pause = new QAction(tr("&Pause"), this);
  QAction *record= new QAction(tr("&Record"), this);
+ QAction *zoomin  = new QAction(tr("Zoom in"), this);
+ QAction *zoomout = new QAction(tr("Zoom out"), this);
  QToolBar *toolbar = addToolBar("Main ToolBar");
  QLCDNumber *lcd = new QLCDNumber();
  QLabel * play_v = new QLabel(), * rec_v = new QLabel();
  QSlider * play_slider = new QSlider(Qt::Horizontal), * rec_slider = new QSlider(Qt::Horizontal);
- //QFrame * wave = new QFrame();
- Wave * wave = new Wave();
+ wave = new Wave();
  fileName = "";
  changed = false;
  newa->setIcon(QIcon::fromTheme("document-new"));
@@ -41,6 +43,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
  save->setShortcut(tr("CTRL+S"));
  saveas->setIcon(QIcon::fromTheme("document-save-as"));
  import->setIcon(QIcon::fromTheme("audio-x-generic"));
+ zoomin->setIcon(QIcon::fromTheme("zoom-in"));
+ zoomin->setShortcut(tr("CTRL+Up"));
+ zoomout->setIcon(QIcon::fromTheme("zoom-out"));
+ zoomout->setShortcut(tr("CTRL+Down"));
  play->setIcon(QIcon::fromTheme("media-playback-start"));
  play->setShortcut(tr("Space"));
  play->setCheckable(true);
@@ -75,6 +81,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
  toolbar->addAction(save);
  toolbar->addSeparator();
  toolbar->addAction(import);
+ toolbar->addAction(zoomin);
+ toolbar->addAction(zoomout);
  toolbar->addSeparator();
  toolbar->addAction(stop);
  toolbar->addAction(pause);
@@ -91,7 +99,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
  connect(save, SIGNAL(triggered()), this, SLOT(saveFile()));
  connect(saveas, SIGNAL(triggered()), this, SLOT(saveFileAs()));
  connect(quit, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+ connect(zoomin, SIGNAL(triggered()), this, SLOT(zoomIn()));
+ connect(zoomout, SIGNAL(triggered()), this, SLOT(zoomOut()));
  setCentralWidget(wave);
+ float * buffer;
+ buffer = (float*)malloc(44100*sizeof(float));
+ for (unsigned int i=0;i<44100;i++)
+ {
+    buffer[i]=sin(1*(2*M_PI)*i/44100);
+ }
+ wave->setSampleRate(44100);
+ wave->setBytesPerSecond(1000);
+ wave->setBuffer(buffer, 44100);
 }
 
 void MainWindow::newFile()
@@ -139,4 +159,14 @@ void MainWindow::saveFileAs()
         fileName = filename;
         saveFile();
     }
+}
+
+void MainWindow::zoomIn()
+{
+    if (wave->getBytesPerSecond()+10<1500) wave->setBytesPerSecond(wave->getBytesPerSecond()+10);
+}
+
+void MainWindow::zoomOut()
+{
+    if (wave->getBytesPerSecond()-10>100) wave->setBytesPerSecond(wave->getBytesPerSecond()-10);
 }
