@@ -3,6 +3,7 @@
 #include <QSplashScreen>
 #include "RtAudio.h"
 #include "mainwindow.h"
+#include "audio.h"
 
 int main(int argc, char *argv[])
 {
