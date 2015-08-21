@@ -10,8 +10,10 @@ public:
     void setBuffer(float * buffer, unsigned long bs);
     void setSampleRate(unsigned int sr);
     void setBytesPerSecond(unsigned int bps);
+    void setPos(unsigned long pos);
     // Get
     unsigned int getBytesPerSecond();
+    unsigned long getPos();
 protected:
     void paintEvent(QPaintEvent *e);
     void drawWidget(QPainter &qp);
@@ -23,6 +25,7 @@ private:
     unsigned long bufferSize;
     unsigned int WaveHeight;
     unsigned int BytesPerSecond;
+    unsigned long startPos;
 };
 
 #endif // WAVE_H

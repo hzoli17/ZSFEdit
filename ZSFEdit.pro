@@ -9,9 +9,28 @@ INCLUDEPATH += .
 
 # Input
 SOURCES += main.cpp mainwindow.cpp \
-    wave.cpp
+    wave.cpp \
+    RtAudio.cpp \
+    audio.cpp
 HEADERS += mainwindow.h \
-    wave.h
+    wave.h \
+    RtAudio.h \
+    audio.h
 
 RESOURCES += \
     rc.qrc
+
+unix:linux {
+DEFINES +=__LINUX_ALSA__
+LIBS +=-lasound
+}
+
+unix:macx {
+DEFINES +=__MACOSX_CORE__
+LIBS +=-framework CoreAudio -lpthread
+}
+
+win32: {
+DEFINES +=__WINDOWS_DS__
+LIBS +=-lole32 -lwinmm -ldsound
+}

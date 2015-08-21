@@ -12,6 +12,7 @@ Wave::Wave(QWidget *parent)
   sampleRate = 0;
   WaveHeight = 10;
   BytesPerSecond = 100;
+  startPos = 0;
 }
 
 void Wave::paintEvent(QPaintEvent *e)
@@ -30,10 +31,10 @@ void Wave::drawWidget(QPainter &qp)
     unsigned int maxVal=150;
     qp.setPen(pen);
     qp.drawLine(0,size().height()/2, size().width(), size().height()/2);
-    for (int i=0;i<size().width();i+=BytesPerSecond/2)
+    for (int i=0;i<size().width();i+=BytesPerSecond)
     {
     qp.drawLine(i,0, i,10);
-    qp.drawText(i,20,QDateTime::fromTime_t((int)((float)i/BytesPerSecond*60)).toString("mm:ss"));
+    qp.drawText(i,20,QDateTime::fromTime_t((int)((float)i/BytesPerSecond)).toString("mm:ss"));
     }
     qp.drawLine(0,22,size().width(),22);
     if (bufferSize)
@@ -42,8 +43,8 @@ void Wave::drawWidget(QPainter &qp)
         qp.setPen(wavePen);
         for (int i=0;i<size().width();i++)
         {
-            if (bufferSize<(unsigned long)sampleRate/BytesPerSecond*i) break;
-            addVal = ((float)maxVal/1) * audioBuffer[sampleRate/BytesPerSecond*(i)];
+            if (bufferSize<(unsigned long)sampleRate/BytesPerSecond*(i+startPos)) break;
+            addVal = ((float)maxVal/1) * audioBuffer[sampleRate/BytesPerSecond*(i+startPos)];
             if (audioBuffer[sampleRate/BytesPerSecond*i]>1.0) addVal=maxVal;
             qp.drawLine(i, size().height()/2+lastVal, i, size().height()/2 + addVal);
             lastVal = addVal;
@@ -69,7 +70,18 @@ void Wave::setBytesPerSecond(unsigned int bps)
     repaint();
 }
 
+void Wave::setPos(unsigned long pos)
+{
+    startPos = pos;
+    repaint();
+}
+
 unsigned int Wave::getBytesPerSecond()
 {
     return BytesPerSecond;
+}
+
+unsigned long Wave::getPos()
+{
+    return startPos;
 }

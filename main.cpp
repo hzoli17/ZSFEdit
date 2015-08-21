@@ -1,6 +1,7 @@
 #include <QApplication>
 #include <QWidget>
 #include <QSplashScreen>
+#include "RtAudio.h"
 #include "mainwindow.h"
 
 int main(int argc, char *argv[])

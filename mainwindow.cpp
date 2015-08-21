@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFrame>
+#include "audio.h"
 #include <cstdlib>
 #include <cmath>
 
