@@ -25,5 +25,8 @@ namespace Audio
     bool openAudioInputDevice(unsigned int device);
     void setSampleRate(unsigned int samplerate = 44100);
     void setBufferFrames(unsigned int bufferframes = 256);
+    // Event
+    void closeOutputDevice();
+    void closeInputDevice();
 }
 #endif // AUDIO_H

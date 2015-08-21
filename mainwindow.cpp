@@ -11,12 +11,17 @@
 #include <QFileDialog>
 #include <QFrame>
 #include "audio.h"
+#include "settings.h"
 #include <cstdlib>
 #include <cmath>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
  QMenu *file;
+ QMenu *edit;
+ QMenu *effect;
+ QMenu *tools;
+ QMenu *help;
  QAction *newa = new QAction(tr("&New"), this);
  QAction *open = new QAction(tr("&Open"), this);
  QAction *save = new QAction(tr("&Save"), this);
@@ -29,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
  QAction *record= new QAction(tr("&Record"), this);
  QAction *zoomin  = new QAction(tr("Zoom in"), this);
  QAction *zoomout = new QAction(tr("Zoom out"), this);
+ QAction *settings = new QAction(tr("&Settings"), this);
  QToolBar *toolbar = addToolBar("Main ToolBar");
  QLCDNumber *lcd = new QLCDNumber();
  QLabel * play_v = new QLabel(), * rec_v = new QLabel();
@@ -68,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
  play_slider->setRange(0, 100);
  rec_slider->setMaximumWidth(50);
  rec_slider->setRange(0, 100);
- file = menuBar()->addMenu("&File");
+ file = menuBar()->addMenu(tr("&File"));
  file->addAction(newa);
  file->addAction(open);
  file->addAction(save);
@@ -77,6 +83,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
  file->addAction(import);
  file->addSeparator();
  file->addAction(quit);
+ edit = menuBar()->addMenu(tr("&Edit"));
+ effect = menuBar()->addMenu(tr("&Effects"));
+ tools = menuBar()->addMenu(tr("&Tools"));
+ settings->setIcon(QIcon::fromTheme("multimedia-volume-control"));
+ tools->addAction(settings);
+ help = menuBar()->addMenu(tr("&Help"));
+
  toolbar->addAction(newa);
  toolbar->addAction(open);
  toolbar->addAction(save);
@@ -103,6 +116,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
  connect(zoomin, SIGNAL(triggered()), this, SLOT(zoomIn()));
  connect(zoomout, SIGNAL(triggered()), this, SLOT(zoomOut()));
+
+ connect(settings, SIGNAL(triggered()), this, SLOT(settings()));
  setCentralWidget(wave);
  float * buffer;
  buffer = (float*)malloc(44100*sizeof(float));
@@ -170,4 +185,11 @@ void MainWindow::zoomIn()
 void MainWindow::zoomOut()
 {
     if (wave->getBytesPerSecond()-10>100) wave->setBytesPerSecond(wave->getBytesPerSecond()-10);
+}
+
+void MainWindow::settings()
+{
+    Settings * settings_window = new Settings(this);
+    settings_window->show();
+
 }

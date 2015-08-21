@@ -19,6 +19,7 @@ private slots:
     void openFile();
     void saveFile();
     void saveFileAs();
+    void settings();
     // Zoom
     void zoomIn();
     void zoomOut();

@@ -1,5 +1,6 @@
 #include "audio.h"
 #include "RtAudio.h"
+#include <cmath>
 RtAudio dac, adc;
 std::string outError, inError;
 bool outIsOpened = false, inIsOpened = false;
@@ -15,10 +16,14 @@ int audioOutputCallback( void *outputBuffer, void *inputBuffer, unsigned int nBu
     Q_UNUSED(inputBuffer);
     Q_UNUSED(userData);
     Q_UNUSED(streamTime);
+    static unsigned int j =0;
     if (status) qDebug() << QObject::tr("Stream overflow detected in audio output stream!");
     for (i=0;i<nBufferFrames;i++)
     {
-        *buffer++ = outBuffer[i];
+        //*buffer++ = outBuffer[i];
+        *buffer++ = sin(440*(2*M_PI)*j/sampleRate);
+        *buffer++ = sin(440*(2*M_PI)*j/sampleRate);
+        j++;
     }
     return 0;
 }
@@ -34,7 +39,7 @@ int audioInputCallback( void *outputBuffer, void *inputBuffer, unsigned int nBuf
     if (status) qDebug() << QObject::tr("Stream overflow detected in audio input stream!");
     for (i=0;i<nBufferFrames;i++)
     {
-        *buffer++ = inBuffer[i];
+        inBuffer[i]=*buffer++;
     }
     return 0;
 }
@@ -95,13 +100,25 @@ bool Audio::openAudioOutputDevice(unsigned int device)
 {
     RtAudio::StreamParameters p;
     double data[2];
+    unsigned int num = 0;
     if (outIsOpened) return false;
-    p.deviceId = device;
+    for (unsigned int i=0;i<dac.getDeviceCount();i++)
+    {
+        if (dac.getDeviceInfo(i).outputChannels)
+        {
+            if (device == num)
+            {
+                p.deviceId = i;
+                break;
+            }
+            num++;
+        }
+    }
     p.firstChannel = 0;
     p.nChannels = 2;
     try
     {
-        dac.openStream(&p, NULL, RTAUDIO_FLOAT64, sampleRate, &bufferFrames, &audioOutputCallback, (void*)&data);
+        dac.openStream(&p, NULL, RTAUDIO_FLOAT32, sampleRate, &bufferFrames, &audioOutputCallback, (void*)&data);
         dac.startStream();
     }
     catch (RtAudioError& e)
@@ -118,13 +135,25 @@ bool Audio::openAudioInputDevice(unsigned int device)
 {
     RtAudio::StreamParameters p;
     double data[2];
+    unsigned int num = 0;
     if (inIsOpened) return false;
-    p.deviceId = device;
+    for (unsigned int i=0;i<adc.getDeviceCount();i++)
+    {
+        if (adc.getDeviceInfo(i).inputChannels)
+        {
+            if (device == num)
+            {
+                p.deviceId = i;
+                break;
+            }
+            num++;
+        }
+    }
     p.firstChannel = 0;
     p.nChannels = 2;
     try
     {
-        adc.openStream(NULL, &p, RTAUDIO_FLOAT64, sampleRate, &bufferFrames, &audioInputCallback, (void*)&data);
+        adc.openStream(NULL, &p, RTAUDIO_FLOAT32, sampleRate, &bufferFrames, &audioInputCallback, (void*)&data);
         adc.startStream();
     }
     catch (RtAudioError& e)
@@ -159,14 +188,42 @@ QString Audio::getInError()
 
 QString Audio::getOutDeviceName(unsigned int device)
 {
-    if (dac.getDeviceCount()>device)
-        return QString::fromStdString(dac.getDeviceInfo(device).name);
+    unsigned int num = 0;
+    for (unsigned int i=0;i<dac.getDeviceCount();i++)
+    {
+        if (dac.getDeviceInfo(i).outputChannels)
+        {
+            if (device == num) return QString::fromStdString(dac.getDeviceInfo(i).name);
+            num++;
+        }
+    }
     return QObject::tr("Unknown audio output device");
 }
 
 QString Audio::getInDeviceName(unsigned int device)
 {
-    if (dac.getDeviceCount()>device)
-        return QString::fromStdString(adc.getDeviceInfo(device).name);
+    unsigned int num = 0;
+    for (unsigned int i=0;i<adc.getDeviceCount();i++)
+    {
+        if (adc.getDeviceInfo(i).inputChannels)
+        {
+            if (device == num) return QString::fromStdString(adc.getDeviceInfo(i).name);
+            num++;
+        }
+    }
     return QObject::tr("Unknown audio input device");
+}
+
+void Audio::closeOutputDevice()
+{
+    if (!dac.isStreamOpen()) return;
+    dac.stopStream();
+    dac.closeStream();
+}
+
+void Audio::closeInputDevice()
+{
+    if (!adc.isStreamOpen()) return;
+    adc.stopStream();
+    adc.closeStream();
 }

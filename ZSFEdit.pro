@@ -11,11 +11,13 @@ INCLUDEPATH += .
 SOURCES += main.cpp mainwindow.cpp \
     wave.cpp \
     RtAudio.cpp \
-    audio.cpp
+    audio.cpp \
+    settings.cpp
 HEADERS += mainwindow.h \
     wave.h \
     RtAudio.h \
-    audio.h
+    audio.h \
+    settings.h
 
 RESOURCES += \
     rc.qrc
