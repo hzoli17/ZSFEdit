@@ -16,4 +16,8 @@ public slots:
     void outputChanged(int index);
 };
 
+namespace config
+{
+    void loadParams();
+}
 #endif // SETTINGS_H

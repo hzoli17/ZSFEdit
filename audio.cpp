@@ -3,11 +3,11 @@
 #include <cmath>
 RtAudio dac, adc;
 std::string outError, inError;
-bool outIsOpened = false, inIsOpened = false;
+bool outIsOpened = false, inIsOpened = false, outCallbackEnabled=false, inCallbackEnabled=false;
 unsigned int sampleRate = 44100;
 unsigned int bufferFrames = 256;
 float * outBuffer, * inBuffer;
-
+void * outCallback, * inCallback;
 int audioOutputCallback( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
          double streamTime, RtAudioStreamStatus status, void *userData )
 {
@@ -18,6 +18,7 @@ int audioOutputCallback( void *outputBuffer, void *inputBuffer, unsigned int nBu
     Q_UNUSED(streamTime);
     static unsigned int j =0;
     if (status) qDebug() << QObject::tr("Stream overflow detected in audio output stream!");
+    if (outCallbackEnabled) ((void (*)(void)) outCallback)();
     for (i=0;i<nBufferFrames;i++)
     {
         //*buffer++ = outBuffer[i];
@@ -41,6 +42,7 @@ int audioInputCallback( void *outputBuffer, void *inputBuffer, unsigned int nBuf
     {
         inBuffer[i]=*buffer++;
     }
+    if (inCallbackEnabled) ((void (*)(void)) inCallback)();
     return 0;
 }
 
@@ -123,6 +125,7 @@ bool Audio::openAudioOutputDevice(unsigned int device)
     }
     catch (RtAudioError& e)
     {
+        e.printMessage();
         outError = e.getMessage();
         return false;
     }
@@ -218,12 +221,37 @@ void Audio::closeOutputDevice()
 {
     if (!dac.isStreamOpen()) return;
     dac.stopStream();
+    while (dac.isStreamRunning());
     dac.closeStream();
+    outIsOpened = false;
 }
 
 void Audio::closeInputDevice()
 {
     if (!adc.isStreamOpen()) return;
     adc.stopStream();
+    while (adc.isStreamRunning());
     adc.closeStream();
+}
+
+void Audio::setOutputCallback(void *callback)
+{
+    outCallback = callback;
+    outCallbackEnabled = true;
+}
+
+void Audio::setInputCallback(void *callback)
+{
+    inCallback= callback;
+    inCallbackEnabled = true;
+}
+
+bool Audio::isOutputOpen()
+{
+    return outIsOpened;
+}
+
+bool Audio::isInputOpen()
+{
+    return inIsOpened;
 }

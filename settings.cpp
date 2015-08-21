@@ -4,8 +4,13 @@
 #include <QPicture>
 #include <QPushButton>
 #include <QComboBox>
-#include <QDialogButtonBox>
+#include <QMessageBox>
+#include <QSettings>
+#include <QSettings>
 #include "audio.h"
+
+QSettings * settings = new QSettings("config.ini", QSettings::IniFormat);
+QString outputDevice = "", inputDevice = "";
 Settings::Settings(QWidget *parent) :
     QDialog(parent)
 {
@@ -28,8 +33,26 @@ Settings::Settings(QWidget *parent) :
 
 void Settings::outputChanged(int index)
 {
-    qDebug()<<index;
     Audio::closeOutputDevice();
-    if (!Audio::openAudioOutputDevice(index))
-        qDebug()<<Audio::getOutError();
+    if (!Audio::openAudioOutputDevice(index)) QMessageBox::critical(this, tr("Hiba"), tr("Cannot open audio output device: ")+Audio::getOutError()); else
+    settings->setValue("output.device", Audio::getOutDeviceName(index));
+}
+
+void config::loadParams()
+{
+    outputDevice = settings->value("output.device","").toString();
+    inputDevice  = settings->value("input.device", "").toString();
+    qDebug()<<"output.device = "<<outputDevice;
+    for (unsigned int i=0;i<Audio::getAudioOutputCount();i++)
+    {
+        if (Audio::getOutDeviceName(i) == outputDevice) Audio::openAudioOutputDevice(i);
+    }
+    if (!Audio::isOutputOpen() && Audio::getAudioOutputCount())
+        Audio::openAudioOutputDevice(Audio::getDefaultOutputDevice());
+    for (unsigned int i=0;i<Audio::getAudioInputCount();i++)
+    {
+        if (Audio::getOutDeviceName(i) == inputDevice) Audio::openAudioInputDevice(i);
+    }
+    if (!Audio::isInputOpen() && Audio::getAudioInputCount())
+        Audio::openAudioInputDevice(Audio::getDefaultInputDevice());
 }

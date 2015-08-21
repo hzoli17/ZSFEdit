@@ -179,7 +179,7 @@ void MainWindow::saveFileAs()
 
 void MainWindow::zoomIn()
 {
-    if (wave->getBytesPerSecond()+10<1500) wave->setBytesPerSecond(wave->getBytesPerSecond()+10);
+    if (wave->getBytesPerSecond()+10<5500) wave->setBytesPerSecond(wave->getBytesPerSecond()+10);
 }
 
 void MainWindow::zoomOut()
